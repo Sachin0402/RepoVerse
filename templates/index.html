@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Results - GitHub Project Recommender</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --success: #10b981;
+            --success-light: #34d399;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --orange: #f59e0b;
+            --light-bg: #f9fafb;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--text);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0;
+            }
+            10% { opacity: 0.5; }
+            50% {
+                transform: translateY(-100vh) translateX(100px) scale(1.5);
+                opacity: 0.3;
+            }
+            90% { opacity: 0.5; }
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--purple), var(--pink));
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .results-title {
+            font-size: 2.5rem;
+            color: white;
+            margin-bottom: 12px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-query {
+            background: linear-gradient(135deg, var(--success-light), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .results-subtitle {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.1rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            animation: fadeInUp 0.6s ease both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .project-card:nth-child(1) { animation-delay: 0.1s; }
+        .project-card:nth-child(2) { animation-delay: 0.2s; }
+        .project-card:nth-child(3) { animation-delay: 0.3s; }
+        .project-card:nth-child(4) { animation-delay: 0.4s; }
+        .project-card:nth-child(5) { animation-delay: 0.5s; }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--purple), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .project-card:hover::before {
+            left: 100%;
+        }
+
+        .project-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 24px;
+            gap: 16px;
+        }
+
+        .card-left {
+            flex: 1;
+            display: flex;
+            gap: 16px;
+        }
+
+        .rank-badge {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            flex-shrink: 0;
+        }
+
+        .project-info {
+            flex: 1;
+        }
+
+        .project-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .project-name a {
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .project-name a:hover {
+            color: var(--primary);
+        }
+
+        .external-icon {
+            color: var(--primary);
+            font-size: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .project-name:hover .external-icon {
+            opacity: 1;
+        }
+
+        .owner-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .owner-avatar {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--purple), var(--pink));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .match-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: linear-gradient(135deg, var(--success-light), var(--success));
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .description {
+            padding: 0 24px 20px 24px;
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        .topics {
+            padding: 0 24px 20px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .topic-tag {
+            background: linear-gradient(135deg, var(--light-bg), white);
+            color: var(--primary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .topic-tag:hover {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 24px;
+            padding: 20px 24px;
+            background: var(--light-bg);
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .stat-icon {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .badges-row {
+            display: flex;
+            gap: 8px;
+            padding: 0 24px 20px 24px;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-popular {
+            background: linear-gradient(135deg, var(--orange), var(--pink));
+            color: white;
+        }
+
+        .badge-active {
+            background: linear-gradient(135deg, var(--success), var(--primary));
+            color: white;
+        }
+
+        .share-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin: 0 24px 20px 24px;
+        }
+
+        .share-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+            font-size: 1rem;
+            margin-top: 40px;
+        }
+
+        .footer-heart {
+            color: var(--pink);
+            animation: heartbeat 1.5s ease infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        @media (max-width: 768px) {
+            .results-title {
+                font-size: 1.8rem;
+            }
+
+            .card-header {
+                flex-direction: column;
+            }
+
+            .match-badge {
+                align-self: flex-start;
+            }
+
+            .card-stats {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles">
+        <script>
+  for (let i = 0; i < 5; i++) {
+    const div = document.createElement("div");
+    div.className = "particle";
+    div.style.left = `${(i + 1) * 10}%`;
+    div.style.animationDelay = `${i * 0.5}s`;
+    document.body.appendChild(div);
+  }
+</script>
+
+    </div>
+
+    <div class="container">
+        <a href="/" class="back-button">
+            <i class="fas fa-arrow-left"></i> New Search
+        </a>
+
+        <div class="header">
+            <div class="ai-badge">
+                <i class="fas fa-brain"></i> AI-Powered Results
+            </div>
+            <h1 class="results-title">
+                Recommendations for <span class="search-query">"{{ query }}"</span>
+            </h1>
+            <p class="results-subtitle">Found {{ total_results }} perfect match{{ 'es' if total_results != 1 else '' }} for your search</p>
+        </div>
+
+        <div class="results-grid">
+            {% for project in recommendations %}
+            <div class="project-card">
+                <div class="card-header">
+                    <div class="card-left">
+                        <div class="rank-badge">{{ project.rank }}</div>
+                        <div class="project-info">
+                            <h2 class="project-name">
+                                <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer">
+                                    {{ project.name }}
+                                    <i class="fas fa-external-link-alt external-icon"></i>
+                                </a>
+                            </h2>
+                            <div class="owner-info">
+                                <div class="owner-avatar">{{ project.owner_initial }}</div>
+                                <span>by {{ project.owner }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="match-badge">
+                        <i class="fas fa-check-circle"></i> {{ project.match_percentage }}% Match
+                    </div>
+                </div>
+                
+                {% if project.badges %}
+                <div class="badges-row">
+                    {% if 'popular' in project.badges %}
+                    <span class="status-badge badge-popular">
+                        <i class="fas fa-fire"></i> Popular
+                    </span>
+                    {% endif %}
+                    {% if 'active' in project.badges %}
+                    <span class="status-badge badge-active">
+                        <i class="fas fa-code-branch"></i> Active
+                    </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="description">
+                    {{ project.description }}
+                </div>
+
+                <div class="topics">
+                    {% for topic in project.topics %}
+                    <span class="topic-tag">{{ topic }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="card-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-star stat-icon"></i>
+                        <span class="stat-value">{{ project.stars|format_number }}</span> stars
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-code-branch stat-icon"></i>
+                        <span class="stat-value">{{ project.forks }}</span> forks
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-circle stat-icon" style="color: #FF5733;"></i>
+
+                        <span>{{ project.language }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-clock stat-icon"></i>
+                        <span>{{ project.time_ago }}</span>
+                    </div>
+                </div>
+
+                <button class="share-button" onclick="shareProject('{{ project.name }}', '{{ project.url }}')">
+                    <i class="fas fa-share-alt"></i> Share
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="footer">
+            Made with <span class="footer-heart">❤️</span> by GitHub Project Recommender
+        </div>
+    </div>
+
+    <script>
+        function shareProject(projectName, url) {
+            if (navigator.share) {
+                navigator.share({
+                    title: projectName,
+                    text: `Check out this awesome project: ${projectName}`,
+                    url: url
+                }).catch(() => {
+                    copyToClipboard(url);
+                });
+            } else {
+                copyToClipboard(url);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Link copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy link');
+            });
+        }
+    </script>
+</body>
+</html>
