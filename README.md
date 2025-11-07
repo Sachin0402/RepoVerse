@@ -6,8 +6,6 @@ The system combines TF-IDF vectorization and cosine similarity techniques to und
 
 # GitHub Project Recommender - Setup Guide
 
-# GitHub Project Recommender - Setup Guide
-
 ## 📁 Project Structure
 
 ```
