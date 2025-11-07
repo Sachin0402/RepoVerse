@@ -6,6 +6,8 @@ The system combines TF-IDF vectorization and cosine similarity techniques to und
 
 # GitHub Project Recommender - Setup Guide
 
+# GitHub Project Recommender - Setup Guide
+
 ## 📁 Project Structure
 
 ```
@@ -222,14 +224,11 @@ export SECRET_KEY=your-secret-key-here
 
 ### Future Enhancements:
 
-- [ ] User authentication
-- [ ] Save favorite projects
+- [ ] Add search filters (by language or stars)
+- [ ] Display live GitHub repo stats
 - [ ] Search history
-- [ ] Advanced filters (language, stars, etc.)
-- [ ] Real-time GitHub API integration
-- [ ] Database integration
-- [ ] Caching for faster responses
-- [ ] API endpoint for programmatic access
+- [ ] Improve UI and responsiveness
+
 
 ## 🤝 Contributing
 
